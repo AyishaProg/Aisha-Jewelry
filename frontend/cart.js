@@ -10,6 +10,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     let cartIds = JSON.parse(localStorage.getItem("ayisha_cart")) || [];
     const currencyFormatter = new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' });
 
+    // Centralized API Base URL 
+    // If testing with Live Server, use http://localhost:3000. 
+    // If running via server.js, "" is correct.
+    const API_BASE = window.location.port === "5500" ? "http://localhost:3000" : "";
+
     const getImagePath = (path) => {
         if (!path) return 'https://via.placeholder.com/80?text=No+Image'; // Default placeholder
         if (path.startsWith('http') || path.startsWith('/') || path.startsWith('data:')) return path; // Already a full URL, absolute path, or base64
@@ -65,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     try {
-        const response = await fetch("/products");
+        const response = await fetch(`${API_BASE}/products`);
         const allProducts = await response.json();
         updateCartDisplay(allProducts);
 
