@@ -74,29 +74,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         const allProducts = await response.json();
         updateCartDisplay(allProducts);
 
-        // Handle individual item removal using event delegation
+        // Consolidated event listener for cart actions (Removal and Quantity)
         cartItemsContainer.addEventListener("click", (e) => {
-            if (e.target.classList.contains("remove-btn")) {
-                const idToRemove = e.target.getAttribute("data-id");
-                // Remove all instances of this ID
-                cartIds = cartIds.filter(id => id !== idToRemove);
-                updateCartDisplay(allProducts);
-            }
-        });
+            const target = e.target;
+            const id = target.getAttribute("data-id");
+            if (!id) return;
 
-        // Handle Quantity adjustments
-        cartItemsContainer.addEventListener("click", (e) => {
-            if (e.target.classList.contains("qty-btn")) {
-                const id = e.target.getAttribute("data-id");
-                const action = e.target.getAttribute("data-action");
+            if (target.classList.contains("remove-btn")) {
+                cartIds = cartIds.filter(itemId => itemId !== id);
+            } else if (target.classList.contains("qty-btn")) {
+                const action = target.getAttribute("data-action");
                 if (action === "increase") {
                     cartIds.push(id);
                 } else if (action === "decrease") {
                     const index = cartIds.indexOf(id);
                     if (index > -1) cartIds.splice(index, 1);
                 }
-                updateCartDisplay(allProducts);
             }
+            updateCartDisplay(allProducts);
         });
 
         clearCartBtn.addEventListener("click", () => {

@@ -14,7 +14,7 @@ app.use(express.json());
 
 // ✅ SERVE FRONTEND FILES
 // Points to the 'frontend' directory at the root of the project
-const STATIC_PATH = path.resolve(__dirname, "..", "frontend");
+const STATIC_PATH = path.join(process.cwd(), "frontend");
 
 if (!fs.existsSync(STATIC_PATH)) {
   console.error(`\x1b[31mError: Frontend directory not found at ${STATIC_PATH}\x1b[0m`);
@@ -23,7 +23,7 @@ if (!fs.existsSync(STATIC_PATH)) {
 app.use(express.static(STATIC_PATH));
 
 // ✅ SERVE IMAGES FOLDER (with validation)
-const IMAGES_PATH = path.resolve(__dirname, "images");
+const IMAGES_PATH = path.join(process.cwd(), "backend", "images");
 if (!fs.existsSync(IMAGES_PATH)) {
   console.error(`\x1b[31mError: Images directory not found at ${IMAGES_PATH}\x1b[0m`);
 }
@@ -139,21 +139,27 @@ app.get("/products", (req, res) => {
   }
 });
 
+// ✅ Setup Email Transporter Once (Optimization)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// Verify transporter configuration on startup
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  transporter.verify((error) => {
+    if (error) console.error("❌ Email Configuration Error:", error.message);
+    else console.log("✅ Email server is ready");
+  });
+}
+
 // ✅ CONTACT FORM ROUTE
 app.post("/contact", async (req, res) => {
   const { name, email, message } = req.body;
-  
-  // 1. Create a transporter (Example using Gmail)
-  // Note: For Gmail, you may need to use an "App Password"
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER, 
-      pass: process.env.EMAIL_PASS
-    }
-  });
 
-  // 2. Setup email data
   const mailOptions = {
     from: `"Ayisha Jewelry Contact" <${process.env.EMAIL_USER}>`,
     to: process.env.EMAIL_USER, 
@@ -187,9 +193,10 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
+  const host = process.env.NODE_ENV === 'production' ? 'Production' : `http://localhost:${PORT}`;
   console.log(`
 ✨ AYISHA JEWELRY Server Active!
-🔗 View Website: http://localhost:${PORT}
-📂 API Data: http://localhost:${PORT}/products
+🔗 Environment: ${host}
+📂 Products API: /products
   `);
 });
